@@ -123,6 +123,7 @@ Eval [
     filein: 'Inspector/GtkIntegerInspectorView.st';
     filein: 'Inspector/GtkFloatInspectorView.st';
     filein: 'Implementors/GtkImageModel.st';
+    filein: 'Implementors/GtkImageWidget.st';
     filein: 'Implementors/GtkImplementor.st';
     filein: 'Senders/GtkSender.st';
     filein: 'Notification/Kernel/AbstractNamespace.st';

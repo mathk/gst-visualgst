@@ -302,13 +302,33 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.';
 	    yourself
     ]
 
+    buildTabbedWidget [
+        <category: 'user interface'>
+
+        ^ GTK.GtkVPaned new
+            pack1: self buildClassBrowserTabbedWidget mainWidget resize: true shrink: true;
+            pack2: self buildNotebookWorkspaceWidget mainWidget resize: true shrink: false;
+            yourself
+    ]
+
+    buildExpanderAndCentralWidget [
+	<category: 'user interface'>
+
+	| temp |
+	temp := GtkImageWidget new
+			initialize;
+			showAll;
+			yourself.
+	^ GTK.GtkHPaned new
+            pack1: temp mainWidget resize: false shrink: false;
+            pack2: self buildTabbedWidget resize: true shrink: false;
+            yourself
+    ]
+
     buildCentralWidget [
 	<category: 'intialize-release'>
 
-	^ GTK.GtkVPaned new
-	    pack1: self buildClassBrowserTabbedWidget mainWidget resize: true shrink: true;
-	    pack2: self buildNotebookWorkspaceWidget mainWidget resize: true shrink: false;
-	    yourself
+	^ self buildExpanderAndCentralWidget
     ]
 
     buildClassBrowserTabbedWidget [

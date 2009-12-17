@@ -131,6 +131,7 @@
   <filein>Inspector/GtkIntegerInspectorView.st</filein>
   <filein>Inspector/GtkFloatInspectorView.st</filein>
   <filein>Implementors/GtkImageModel.st</filein>
+  <filein>Implementors/GtkImageWidget.st</filein>
   <filein>Implementors/GtkImplementor.st</filein>
   <filein>Senders/GtkSender.st</filein>
   <filein>Notification/Kernel/AbstractNamespace.st</filein>
@@ -280,6 +281,7 @@
   <file>Inspector/GtkIntegerInspectorView.st</file>
   <file>Inspector/GtkFloatInspectorView.st</file>
   <file>Implementors/GtkImageModel.st</file>
+  <file>Implementors/GtkImageWidget.st</file>
   <file>Implementors/GtkImplementor.st</file>
   <file>Senders/GtkSender.st</file>
   <file>Notification/Kernel/AbstractNamespace.st</file>
