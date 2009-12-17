@@ -179,7 +179,9 @@ Eval [
     ressource: 'Icons/NUnit.Running.png';
     ressource: 'Icons/NUnit.SuccessAndFailed.png';
     ressource: 'Icons/NUnit.Success.png';
-    start: 'VisualGST.VisualGST open.
-    GTK.Gtk main';
+    start: '
+    [ VisualGST.VisualGST open.
+      GTK.Gtk main ] fork.
+    Processor activeProcess suspend.';
     buildXml
 ]

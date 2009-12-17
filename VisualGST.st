@@ -1,7 +1,7 @@
 GtkMainWindow subclass: VisualGST [
     VisualGST class [ | compileError uniqueInstance | ]
 
-    | browsers outputs saved transcriptWidget windowsMenu systemChangeNotifier |
+    | browsers imagePaned imageWidget imagePosition outputs saved transcriptWidget windowsMenu systemChangeNotifier |
 
     VisualGST class >> uniqueInstance [
 	<category: 'public'>
@@ -264,6 +264,7 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.';
 
 	super initialize.
 	saved := false.
+	imagePosition := 250.
         systemChangeNotifier := SystemChangeNotifier new.
         SystemChangeNotifier root add: systemChangeNotifier.
 	window maximize.
@@ -314,15 +315,15 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.';
     buildExpanderAndCentralWidget [
 	<category: 'user interface'>
 
-	| temp |
-	temp := GtkImageWidget new
+	imageWidget := GtkImageWidget new
 			initialize;
 			showAll;
 			yourself.
-	^ GTK.GtkHPaned new
-            pack1: temp mainWidget resize: false shrink: false;
-            pack2: self buildTabbedWidget resize: true shrink: false;
-            yourself
+	^ imagePaned := GTK.GtkHPaned new
+				setPosition: 0;
+				pack1: imageWidget mainWidget resize: false shrink: true;
+				pack2: self buildTabbedWidget resize: true shrink: true;
+				yourself
     ]
 
     buildCentralWidget [
@@ -612,7 +613,8 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.';
 	menu := {GTK.GtkMenuItem menuItem: 'Browser' accelPath: '<GtkLauncher>/Tools/TabbedClassBrowser' connectTo: OpenTabbedBrowserCommand selector: #execute.
             GTK.GtkMenuItem menuItem: 'Browser window' accelPath: '<GtkLauncher>/Tools/ClassBrowser' connectTo: OpenWindowedBrowserCommand selector: #execute.
             GTK.GtkMenuItem menuItem: 'Workspace' connectTo: OpenWorkspaceCommand selector: #execute.
-            GTK.GtkMenuItem menuItem: 'Implementors' accelPath: '<GtkLauncher>/Tools/Implementors' connectTo: OpenImplementorCommand selector: #execute.
+            GTK.GtkMenuItem menuItem: 'Implementors' accelPath: '<GtkLauncher>/Tools/Implementors' connectTo: self selector: #showOrHideImageWidget.
+            "GTK.GtkMenuItem menuItem: 'Implementors' accelPath: '<GtkLauncher>/Tools/Implementors' connectTo: OpenImplementorCommand selector: #execute."
             GTK.GtkMenuItem menuItem: 'Senders' accelPath: '<GtkLauncher>/Tools/Senders' connectTo: OpenSenderCommand selector: #execute.
             GTK.GtkMenuItem menuItem: 'SUnit' connectTo: OpenSUnitCommand selector: #execute} asOrderedCollection.
 
@@ -896,6 +898,14 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.';
 					    ifFalse: [ self previousTab ]
 					    ifTrue: [ self nextTab ].
         ^ true
+    ]
+
+    showOrHideImageWidget [
+	<category: 'tools events'>
+
+	imagePaned setPosition: (imagePaned getPosition = 0 
+				    ifTrue: [ imagePosition ]
+				    ifFalse: [ imagePosition := imagePaned getPosition. 0 ])
     ]
 ]
 

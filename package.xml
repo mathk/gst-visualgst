@@ -337,6 +337,8 @@
   <file>Icons/NUnit.Running.png</file>
   <file>Icons/NUnit.SuccessAndFailed.png</file>
   <file>Icons/NUnit.Success.png</file>
-  <start>VisualGST.VisualGST open.
-    GTK.Gtk main</start>
+  <start>
+    [ VisualGST.VisualGST open.
+      GTK.Gtk main ] fork.
+    Processor activeProcess suspend.</start>
 </package>
