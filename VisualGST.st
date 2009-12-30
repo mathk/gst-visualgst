@@ -319,10 +319,12 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.';
 			initialize;
 			showAll;
 			yourself.
-	^ imagePaned := GTK.GtkHPaned new
-				setPosition: 0;
-				pack1: imageWidget mainWidget resize: false shrink: true;
-				pack2: self buildTabbedWidget resize: true shrink: true;
+	^ imagePaned := (GTK.GtkHBox new: true spacing: 0)
+				setSpacing: 0;
+				add: imageWidget mainWidget;
+				add: self buildTabbedWidget;
+				"pack1: imageWidget mainWidget resize: false shrink: true;
+				pack2: self buildTabbedWidget resize: true shrink: true;"
 				yourself
     ]
 
@@ -903,9 +905,12 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.';
     showOrHideImageWidget [
 	<category: 'tools events'>
 
-	imagePaned setPosition: (imagePaned getPosition = 0 
+	imagePosition > 0 ifTrue: [ 
+	imagePosition := 0.
+	imagePaned remove: imageWidget mainWidget ]
+	"imagePaned setPosition: (imagePaned getPosition = 0 
 				    ifTrue: [ imagePosition ]
-				    ifFalse: [ imagePosition := imagePaned getPosition. 0 ])
+				    ifFalse: [ imagePosition := imagePaned getPosition. 0 ])"
     ]
 ]
 
