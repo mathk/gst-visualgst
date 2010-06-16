@@ -143,6 +143,9 @@
   <filein>Inspector/GtkCharacterInspectorView.st</filein>
   <filein>Inspector/GtkIntegerInspectorView.st</filein>
   <filein>Inspector/GtkFloatInspectorView.st</filein>
+  <filein>Package/Extends.st</filein>
+  <filein>Package/GtkPackageWidget.st</filein>
+  <filein>Package/GtkPackage.st</filein>
   <filein>Implementors/GtkImplementor.st</filein>
   <filein>Senders/GtkSender.st</filein>
   <filein>Notification/Kernel/AbstractNamespace.st</filein>
@@ -301,6 +304,9 @@
   <file>Inspector/GtkCharacterInspectorView.st</file>
   <file>Inspector/GtkIntegerInspectorView.st</file>
   <file>Inspector/GtkFloatInspectorView.st</file>
+  <file>Package/Extends.st</file>
+  <file>Package/GtkPackageWidget.st</file>
+  <file>Package/GtkPackage.st</file>
   <file>Implementors/GtkImplementor.st</file>
   <file>Senders/GtkSender.st</file>
   <file>Notification/Kernel/AbstractNamespace.st</file>

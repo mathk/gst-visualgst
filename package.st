@@ -132,6 +132,9 @@ Eval [
     filein: 'Inspector/GtkCharacterInspectorView.st';
     filein: 'Inspector/GtkIntegerInspectorView.st';
     filein: 'Inspector/GtkFloatInspectorView.st';
+    filein: 'Package/Extends.st';
+    filein: 'Package/GtkPackageWidget.st';
+    filein: 'Package/GtkPackage.st';
     filein: 'Implementors/GtkImplementor.st';
     filein: 'Senders/GtkSender.st';
     filein: 'Notification/Kernel/AbstractNamespace.st';
