@@ -40,7 +40,9 @@ GtkConcreteWidget subclass: GtkPackageWidget [
         aGdkButtonEvent := aGdkEvent castTo: GTK.GdkEventButton type.
         aGdkButtonEvent button value = 3 ifFalse: [ ^ false ].
         menu := GTK.GtkMenu new.
-        menu appendMenuItems: {{'Load it'. self. #loadIt}}.
+        menu appendMenuItems: {{'Load it'. self. #loadIt}.
+		{}.
+		{'Inspect it'. self. #inspectIt}}.
         menu attachToWidget: packageTree detacher: nil.
         menu popup: nil parentMenuItem: nil func: nil data: nil button: 3 activateTime: aGdkButtonEvent time value.
         menu showAll.
@@ -106,6 +108,13 @@ GtkConcreteWidget subclass: GtkPackageWidget [
 
 	self hasSelectedPackage ifFalse: [ ^ self ].
 	PackageLoader fileInPackage: self selectedPackage name
+    ]
+
+    inspectIt [
+        <category: 'model event'>
+
+        self hasSelectedPackage ifFalse: [ ^ self ].
+        GtkInspector openOn: self selectedPackage
     ]
 ]
 

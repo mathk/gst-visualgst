@@ -27,6 +27,13 @@ GtkCategorizedClassWidget subclass: GtkClassSUnitWidget [
         ^ (classesTree getSelection getSelectedRows: nil) ~= nil
     ]
 
+    addToModel: aClass [
+
+	(aClass superclass environment == self namespace and: [ (aClass superclass category = self category or: [ self category isEmpty ]) and: [ aClass superclass == Smalltalk.TestCase ] ]) 
+		    ifFalse: [ model append: aClass class ] 
+		    ifTrue: [ model append: aClass class parent: aClass superclass class ]
+    ]
+
     selectedClass [
         <category: 'accessing'>
 
