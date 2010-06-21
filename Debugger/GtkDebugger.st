@@ -374,6 +374,17 @@ GtkBrowsingTool subclass: GtkDebugger [
 	AddMethodCommand on: self.
     ]
 
+    buildTargetObject [
+
+        | class object |
+        class := (Behavior new)
+                    superclass: (self hasSelectedContext ifTrue: [ self selectedContext receiver class ] ifFalse: [ Object ]);
+                    yourself.
+        class addInstVarName: temp.
+        object := class new.
+
+    ]
+
     targetObject [
         <category: 'smalltalk event'>
 
