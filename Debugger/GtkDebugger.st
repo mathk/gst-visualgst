@@ -178,7 +178,11 @@ GtkBrowsingTool subclass: GtkDebugger [
 				connectSignal: 'clicked' to: self selector: #stepInto;
 				setTooltipText: 'Step into';
 				yourself);
-	    appendToolItem: ((GTK.GtkToolButton new: (GTK.GtkImage newFromFile: (GtkLauncher / 'Icons/go-jump.png') file displayString) label: 'Step to here')
+	    appendToolItem: ((GTK.GtkToolButton new: (GTK.GtkImage newFromFile: (GtkLauncher / 'Icons/go-jump.png') file displayString) label: 'Step over')
+				connectSignal: 'clicked' to: self selector: #stepOver;
+				setTooltipText: 'Step over';
+				yourself);
+	    appendToolItem: ((GTK.GtkToolButton new: (GTK.GtkImage newFromFile: (GtkLauncher / 'Icons/go-last.png') file displayString) label: 'Step to here')
 				connectSignal: 'clicked' to: self selector: #step;
 				setTooltipText: 'Step to here';
 				yourself)
