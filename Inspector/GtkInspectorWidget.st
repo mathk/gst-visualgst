@@ -138,7 +138,7 @@ GtkConcreteWidget subclass: GtkInspectorWidget [
     dive [
 	<category: 'events'>
 
-	(self selectedItem = 'self' or: [ objectView canDive not ]) ifTrue: [ ^ self ].
+	(self selectedItem = 'self' or: [ (objectView canDive: self selectedItem) not ]) ifTrue: [ ^ self ].
 	stack addFirst: self object.
         self object: self selectedValue
     ]

@@ -44,7 +44,7 @@ Object subclass: GtkObjectInspectorView [
 			instVarNamed: aString ]
     ]
 
-    canDive [
+    canDive: anItem [
 	<category: 'testing'>
 
 	^ true

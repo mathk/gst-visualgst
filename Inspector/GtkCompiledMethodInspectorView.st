@@ -16,6 +16,11 @@ GtkObjectInspectorView subclass: GtkCompiledMethodInspectorView [
 					    'Source Code'->#source} ]
     ]
 
+    canDive: anItem [
+	self class fields at: anItem ifAbsent:[^true].
+	^false
+    ]
+
     do: aBlock [
 	<category: 'accessing'>
 
@@ -73,10 +78,11 @@ GtkObjectInspectorView subclass: GtkCompiledMethodInspectorView [
 
 	| stream |
 	stream := WriteStream on: String new.
-	1 to: self numLiterals do: [ :i | 
+	(1 to: self numLiterals) do: [ :i | 
 		self object bytecodeIndex: i with: stream. 
 		stream tab. 
-		stream print: (self object literalAt: i) ].
+		stream print: (self object literalAt: i) ]
+	    separatedBy: [stream nl].
 	^ stream contents
     ]
 
