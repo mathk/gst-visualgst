@@ -229,22 +229,14 @@ GtkConcreteWidget subclass: GtkClassBrowserWidget [
 	<category: 'events'>
 
 	self checkCodeWidgetAndUpdate: [
-	    iCategoryWidget hasSelectedCategory ifFalse: [ ^ self ].
-	    iMethodWidget class: classWidget selectedClass withCategory: iCategoryWidget selectedCategory.
-
-	    codeWidget clear.
-	    state := CategoryState on: self with: classWidget selectedClass -> iCategoryWidget selectedCategory ]
+	    iCategoryWidget updateBrowser: self ]
     ]
 
     onClassSideCategoryChanged [
 	<category: 'events'>
 
 	self checkCodeWidgetAndUpdate: [
-	    cCategoryWidget hasSelectedCategory ifFalse: [ ^ self ].
-	    cMethodWidget class: classWidget selectedClass class withCategory: cCategoryWidget selectedCategory.
-
-	    codeWidget clear.
-	    state := CategoryState on: self with: classWidget selectedClass class -> cCategoryWidget selectedCategory ]
+	    cCategoryWidget updateBrowser: self ]
     ]
 
     onInstanceSideMethodChanged [
@@ -252,10 +244,7 @@ GtkConcreteWidget subclass: GtkClassBrowserWidget [
 
 	| method |
 	self checkCodeWidgetAndUpdate: [
-	    iMethodWidget hasSelectedMethod ifFalse: [ ^ self ].
-	    method := iMethodWidget selectedMethod.
-	    codeWidget sourceCode: iMethodWidget sourceCode.
-	    state := MethodState on: self with: method ]
+	    iMethodWidget updateBrowser: self ]
     ]
 
     onClassSideMethodChanged [
@@ -263,10 +252,7 @@ GtkConcreteWidget subclass: GtkClassBrowserWidget [
 
 	| method |
 	self checkCodeWidgetAndUpdate: [
-	    cMethodWidget hasSelectedMethod ifFalse: [ ^ self ].
-	    method := cMethodWidget selectedMethod.
-	    codeWidget sourceCode: cMethodWidget sourceCode.
-	    state := MethodState on: self with: method ]
+	    cMethodWidget updateBrowser: self ]
     ]
 
     undoStack [
@@ -495,6 +481,18 @@ GtkConcreteWidget subclass: GtkClassBrowserWidget [
 	codeWidget classDefinition: (ClassSource displayHeaderOf: aClass).
     ]
 
+    displayMethodSource: aString [
+	<category: 'private-selection'>
+
+	codeWidget sourceCode: aString
+    ]
+
+    clearSource [
+	<category: 'private-selection'>
+
+	codeWidget clear
+    ]
+
     updateNamespaceWidget: aNamespace [
 	<category: 'private-selection'>
 
@@ -546,6 +544,18 @@ GtkConcreteWidget subclass: GtkClassBrowserWidget [
 	    updateHistory: aClass;
 	    clearMethods
 	
+    ]
+
+    updateInstanceSideMethodCategory: aString [
+	<category: 'private-selection'>
+
+        iMethodWidget class: classWidget selectedClass withCategory: aString
+    ]
+
+    updateClassSideMethodCategory: aString [
+        <category: 'private-selection'>
+
+        cMethodWidget class: classWidget selectedClass class withCategory: aString
     ]
 
     selectANamespace: aNamespace [
