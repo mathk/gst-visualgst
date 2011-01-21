@@ -18,12 +18,15 @@ For the 0.8.1:
 – PackageSource (generate dep and package.xml files)
 – bug fixing
 – pane fixed [ DONE ]
+– class source fixed [ DONE ]
+– class state fixed [ DONE ]
 
 For the 0.8.2:
 --------------
 
 – Refactor onFocusPerfom:
 – welcome screen
+– Formula builder
  
 For the 0.8.5:
 --------------
