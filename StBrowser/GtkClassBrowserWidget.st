@@ -222,26 +222,27 @@ GtkConcreteWidget subclass: GtkClassBrowserWidget [
     onNamespaceChanged [
 	<category: 'events'>
 
+	namespaceWidget hasSelectedNamespace ifFalse: [ ^ self ].
 	self updateState: namespaceWidget state.
-	namespaceWidget hasSelectedNamespace ifTrue: [
-	    GtkAnnouncer current announce: (GtkNamespaceSelectionChanged new
+	GtkAnnouncer current announce: (GtkNamespaceSelectionChanged new
 		selectedNamespace: self selectedNamespace;
-		yourself) ]
+		yourself)
     ]
 
     onClassChanged [
 	<category: 'events'>
 
+	classWidget hasSelectedClass ifFalse: [ ^ self ].
 	self updateState: classWidget state.
-	classWidget hasSelectedClass ifTrue: [
-	    GtkAnnouncer current announce: (GtkClassSelectionChanged new
+	GtkAnnouncer current announce: (GtkClassSelectionChanged new
 		selectedClass: self selectedClass;
-		yourself) ]
+		yourself)
     ]
 
     onClassHierarchyChanged [
 	<category: 'events'>
 
+	classHierarchyWidget hasSelectedClass ifFalse: [ ^ self ].
 	[classHierarchyUpdate := true.
 	self updateState: classHierarchyWidget state]
 	    ensure: [classHierarchyUpdate := false ]
@@ -250,24 +251,28 @@ GtkConcreteWidget subclass: GtkClassBrowserWidget [
     onInstanceSideCategoryChanged [
 	<category: 'events'>
 
+	iCategoryWidget hasSelectedCategory ifFalse: [ ^ self ].
 	self updateState: iCategoryWidget state
     ]
 
     onClassSideCategoryChanged [
 	<category: 'events'>
 
+	cCategoryWidget hasSelectedCategory ifFalse: [ ^ self ].
 	self updateState: cCategoryWidget state
     ]
 
     onInstanceSideMethodChanged [
 	<category: 'events'>
 
+	iMethodWidget hasSelectedMethod ifFalse: [ ^ self ].
 	self updateState: iMethodWidget state
     ]
 
     onClassSideMethodChanged [
 	<category: 'events'>
 
+	cMethodWidget hasSelectedMethod ifFalse: [ ^ self ].
 	self updateState: cMethodWidget state
     ]
 
