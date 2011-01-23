@@ -1,7 +1,7 @@
 GtkConcreteWidget subclass: GtkClassBrowserWidget [
     GtkClassBrowserWidget class [ | Undo | ]
 
-    | launcher checkCode namespaceWidget classWidget classHierarchyWidget classHierarchyUpdate iCategoryWidget iMethodWidget cCategoryWidget cMethodWidget classAndInstanceSide codeWidget historyStack state |
+    | launcher checkCode namespaceWidget classWidget classHierarchyWidget iCategoryWidget iMethodWidget cCategoryWidget cMethodWidget classAndInstanceSide codeWidget historyStack state |
 
     GtkClassBrowserWidget class >> title [
 	<category: 'accessing'>
@@ -164,7 +164,6 @@ GtkConcreteWidget subclass: GtkClassBrowserWidget [
 
 	state := NamespaceState on: self with: Smalltalk.
 	state classCategory: Smalltalk category.
-	classHierarchyUpdate := false.
 	checkCode := true.
 
 	self 
@@ -200,8 +199,16 @@ GtkConcreteWidget subclass: GtkClassBrowserWidget [
     namespaceHierarchySwitchOn: aGtkNotebook page: aGtkNotebookPage number: aSmallInteger [
 	<category: 'events'>
 
-	classWidget hasSelectedClass ifFalse: [ ^ self ].
-	aSmallInteger = 0 ifTrue: [ classHierarchyWidget classOrMeta: classWidget selectedClass ].
+	aSmallInteger = 1 ifTrue: [
+	    classWidget hasSelectedClass ifFalse: [ ^ self ].
+	    ^ classHierarchyWidget classOrMeta: classWidget selectedClass ].
+        aSmallInteger = 0 ifTrue: [
+            classHierarchyWidget hasSelectedClass ifFalse: [ ^ self ].
+	    namespaceWidget
+		selectANamespace: classHierarchyWidget selectedClass environment.
+            classWidget 
+		namespace: classHierarchyWidget selectedClass environment category: '';
+		selectAClass: classHierarchyWidget selectedClass class ].
     ]
 
     classInstanceSwitchOn: aGtkNotebook page: aGtkNotebookPage number: aSmallInteger [
@@ -243,9 +250,7 @@ GtkConcreteWidget subclass: GtkClassBrowserWidget [
 	<category: 'events'>
 
 	classHierarchyWidget hasSelectedClass ifFalse: [ ^ self ].
-	[classHierarchyUpdate := true.
-	self updateState: classHierarchyWidget state]
-	    ensure: [classHierarchyUpdate := false ]
+	self updateState: classHierarchyWidget state
     ]
 
     onInstanceSideCategoryChanged [
@@ -392,25 +397,13 @@ GtkConcreteWidget subclass: GtkClassBrowserWidget [
 	<category: 'private-selection'>
 
 	namespaceWidget selectANamespace: aNamespace.
-        classWidget namespace: aNamespace category: ''.
-        classHierarchyWidget emptyModel
+        classWidget namespace: aNamespace category: ''
     ]
 
     updateClassWidget: aClass [
 	<category: 'private-selection'>
 
-        classWidget selectAClass: aClass class.
-	classHierarchyWidget classOrMeta: aClass class
-    ]
-
-    updateClassHierarchyWidget [
-	<category: 'private-selection'>
-
-        namespaceWidget selectedNamespace ~= classHierarchyWidget selectedClass environment
-                                                    ifTrue: [ namespaceWidget selectANamespace: classHierarchyWidget selectedClass environment ]
-                                                    ifFalse: [ (namespaceWidget selectedCategory fullname ~= '' and: [ namespaceWidget selectedCategory ~= classHierarchyWidget selectedClass asClass classCategory ])
-                                                                                        ifTrue: [ namespaceWidget selectANamespace: classHierarchyWidget selectedClass environment ] ].
-        classWidget selectAClass: classHierarchyWidget selectedClass class
+        classWidget selectAClass: aClass class
     ]
 
     updateCategoryWidget: aClass [
@@ -424,7 +417,6 @@ GtkConcreteWidget subclass: GtkClassBrowserWidget [
 	<category: 'private-selection'>
 
 	classWidget namespace: aNamespace category: aClassCategory fullname.
-	classHierarchyUpdate ifFalse: [ classHierarchyWidget emptyModel ].
 	self
 	    clearCategories;
 	    clearMethods
@@ -433,7 +425,6 @@ GtkConcreteWidget subclass: GtkClassBrowserWidget [
     updateClassOfCategory: aClass [
 	<category: 'private-selection'>
 
-        classHierarchyUpdate ifFalse: [ classHierarchyWidget classOrMeta: aClass ].
         self
 	    updateCategoryWidget: aClass;
 	    updateHistory: aClass;
@@ -441,16 +432,16 @@ GtkConcreteWidget subclass: GtkClassBrowserWidget [
 	
     ]
 
-    updateInstanceSideMethodCategory: aString [
+    updateInstanceSideMethodCategory: aState [
 	<category: 'private-selection'>
 
-        iMethodWidget class: classWidget selectedClass withCategory: aString
+        iMethodWidget class: aState classOrMeta withCategory: aState category
     ]
 
-    updateClassSideMethodCategory: aString [
+    updateClassSideMethodCategory: aState [
         <category: 'private-selection'>
 
-        cMethodWidget class: classWidget selectedClass class withCategory: aString
+        cMethodWidget class: aState classOrMeta withCategory: aState category
     ]
 
     selectANamespace: aNamespace [
