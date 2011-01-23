@@ -51,13 +51,13 @@ GtkConcreteWidget subclass: GtkVariableTrackerWidget [
     hasSelectedValue [
         <category: 'smalltalk event'>
 
-        ^widget treeView hasSelectedValue
+        ^ widget treeView hasSelectedItem
     ]
 
     selectedValue [
         <category: 'smalltalk event'>
 
-        ^widget treeView selection
+        ^ widget treeView selection
     ]
 
     inspectIt: anObject [
@@ -70,7 +70,7 @@ GtkConcreteWidget subclass: GtkVariableTrackerWidget [
 	<category: 'event'>
 
 	| ivar |
-	widget treeView hasSelectedValue ifFalse: [ ^ self ].
+	widget treeView hasSelectedItem ifFalse: [ ^ self ].
 	ivar := self selectedValue.
 	model remove: ivar.
 	object class removeInstVarName: ivar.

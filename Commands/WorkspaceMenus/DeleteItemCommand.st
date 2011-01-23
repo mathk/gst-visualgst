@@ -8,13 +8,13 @@ Command subclass: DeleteItemCommand [
     valid [
 	<category: 'command'>
 
-        ^ target hasSelectedItem
+        ^ target hasSelectedValue
     ]
 
     execute [
 	<category: 'command'>
 
-        target deleteVariable.
+        target deleteVariable
     ]
 ]
 
