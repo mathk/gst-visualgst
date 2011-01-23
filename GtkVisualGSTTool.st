@@ -4,7 +4,7 @@ GtkMainWindow subclass: GtkVisualGSTTool [
     GtkVisualGSTTool class >> version [
         <category: 'accessing'>
 
-        ^ '0.8.0'
+        ^ '0.8.1'
     ]
 
     GtkVisualGSTTool class >> website [

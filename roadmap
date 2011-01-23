@@ -15,7 +15,6 @@ For the 0.8.0:
 For the 0.8.1:
 --------------
 
-– PackageSource (generate dep and package.xml files)
 – bug fixing
 – pane fixed [ DONE ]
 – class source fixed [ DONE ]
@@ -25,8 +24,10 @@ For the 0.8.2:
 --------------
 
 – Refactor onFocusPerfom:
+– one common superclass for GtkNamespaceWidget/GtkClassWidget/GtkMethodWidget/GtkCategoryWidget
 – welcome screen
 – Formula builder
+– PackageSource (generate dep and package.xml files)
  
 For the 0.8.5:
 --------------
