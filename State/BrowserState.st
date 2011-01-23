@@ -30,7 +30,7 @@ Object subclass: BrowserState [
     hasSelection [
 	<category: 'testing'>
 
-	^ ((self hasSelectedNamespace bitOr: self hasSelectedClass) bitOr: self hasSelectedCategory) bitOr: self hasSelectedMethod
+	^ ((self hasSelectedNamespace or: self hasSelectedClass) or: self hasSelectedCategory) or: self hasSelectedMethod
     ]
 
     hasSelectedMethod [

@@ -413,21 +413,23 @@ GtkConcreteWidget subclass: GtkClassBrowserWidget [
         cCategoryWidget classOrMeta: aClass class
     ]
 
-    updateNamespaceOfClass: aNamespace classCategory: aClassCategory [
+    updateNamespaceOfClass: aState [
 	<category: 'private-selection'>
 
-	classWidget namespace: aNamespace category: aClassCategory fullname.
+	classWidget namespace: aState namespace category: aState classCategory fullname.
 	self
 	    clearCategories;
 	    clearMethods
     ]
 
-    updateClassOfCategory: aClass [
+    updateClassOfCategory: aState [
 	<category: 'private-selection'>
 
+	| class |
+	class := aState classOrMeta asClass.
         self
-	    updateCategoryWidget: aClass;
-	    updateHistory: aClass;
+	    updateCategoryWidget: class;
+	    updateHistory: class;
 	    clearMethods
 	
     ]
@@ -662,11 +664,11 @@ GtkConcreteWidget subclass: GtkClassBrowserWidget [
 	^ state
     ]
 
-    updateState: newState [
+    updateState: aState [
 	<category: 'accessing'>
 
-        newState isNil ifTrue: [ ^ self ].
-        self checkCodeWidgetAndUpdate: [ self state: newState ]
+        aState hasSelection ifFalse: [ ^ self ].
+        self checkCodeWidgetAndUpdate: [ self state: aState ]
     ]
 
     state: aState [
