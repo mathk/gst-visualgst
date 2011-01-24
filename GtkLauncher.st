@@ -568,9 +568,11 @@ GtkVisualGSTTool subclass: GtkLauncher [
     createToolsMenus [
 	<category: 'user interface'>
 
-        self accelGroup append: {{'<Control>B'. '<GtkLauncher>/Tools/TabbedClassBrowser'}}.
+        self accelGroup append: {{'<Control>B'. '<GtkLauncher>/Tools/TabbedClassBrowser'}.
+	    {'<Control>G'. '<GtkLauncher>/Tools/GoTo'}}.
 
-	^{GTK.GtkMenuItem menuItem: 'Browser' accelPath: '<GtkLauncher>/Tools/TabbedClassBrowser' connectTo: self selector: #newTabbedBrowser},
+	^{GTK.GtkMenuItem menuItem: 'Browser' accelPath: '<GtkLauncher>/Tools/TabbedClassBrowser' connectTo: self selector: #newTabbedBrowser.
+	  GTK.GtkMenuItem menuItem: 'Go to...' accelPath: '<GtkLauncher>/Tools/GoTo' connectTo: self selector: #goto},
             super createToolsMenus.
     ]
 
@@ -578,6 +580,12 @@ GtkVisualGSTTool subclass: GtkLauncher [
 	<category: 'tools events'>
 
 	OpenTabbedBrowserCommand executeOn: self
+    ]
+
+    goto [
+        <category: 'tools events'>
+
+        GoToCommand executeOn: self
     ]
 
     launcher [
@@ -971,6 +979,11 @@ GtkVisualGSTTool subclass: GtkLauncher [
         ^ true
     ]
 
+    selectANamespace: aNamespace [
+
+	browsers currentWidget selectANamespace: aNamespace
+    ]
+
     selectAnInstanceMethod: aMethod [
 
 	browsers currentWidget selectAnInstanceMethod: aMethod	
@@ -982,6 +995,7 @@ GtkVisualGSTTool subclass: GtkLauncher [
     ]
 
     compileError: aString line: anInteger [
+
 	browsers currentWidget compileError: aString line: anInteger
     ]
 ]

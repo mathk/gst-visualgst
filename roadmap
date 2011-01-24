@@ -24,6 +24,7 @@ For the 0.8.2:
 --------------
 
 – Refactor onFocusPerfom:
+– Waiting Loop for blocking code
 – one common superclass for GtkNamespaceWidget/GtkClassWidget/GtkMethodWidget/GtkCategoryWidget
 – welcome screen
 – Formula builder

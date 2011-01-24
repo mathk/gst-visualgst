@@ -224,6 +224,7 @@ Eval [
     filein: 'SUnit/GtkSUnit.st';
     filein: 'Commands/OpenBrowserCommand.st';
     filein: 'Commands/OpenTabbedBrowserCommand.st';
+    filein: 'Commands/GoToCommand.st';
     filein: 'Commands/ToolsMenus/OpenSUnitCommand.st';
     filein: 'Commands/ToolsMenus/OpenBottomPaneCommand.st';
     filein: 'Commands/OpenWorkspaceCommand.st';
