@@ -103,6 +103,12 @@ CompiledBlock extend [
 
         ^ VisualGST.GtkCompiledBlockInspectorView
     ]
+
+    methodRecompilationSourceString [
+	<category: '*VisualGST'>
+
+	^ self method methodRecompilationSourceString
+    ]
 ]
 
 SequenceableCollection extend [
@@ -372,8 +378,8 @@ Behavior extend [
     debuggerClass [
 	<category: '*VisualGST'>
 
-	"^ VisualGST.GtkDebugger"
-	^ nil
+	"^ nil"
+	^ VisualGST.GtkDebugger
     ]
 ]
 
@@ -636,6 +642,18 @@ GTK.GtkTreeView extend [
 	    elem last = anObject ifTrue: [
                     self scrollToCell: (self getModel getPath: iter) column: nil useAlign: false rowAlign: 0.5 colAlign: 0.5.
                     ^ self getSelection selectIter: iter ] ].
+    ]
+
+    selectNth: anInteger [
+	<category: 'accessing'>
+
+        | path iter |
+        self getSelection unselectAll.
+        anInteger = 0 ifTrue: [^self].
+        path := GtkTreePath newFromIndices: {anInteger - 1. -1}.
+	(self getModel getIter: path) isNil ifTrue: [^self].
+        self scrollToCell: path column: nil useAlign: false rowAlign: 0.5 colAlign: 0.5.
+        self getSelection selectPath: path
     ]
 
     selectFirstItem [

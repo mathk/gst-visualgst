@@ -1,44 +1,7 @@
 GtkTextWidget subclass: GtkWorkspaceWidget [
+
     | variableWidget variableTracker object |
     
-    popupMenuOn: aGtkWidget menu: aGtkMenu [
-	<category: 'events'>
-
-	| menuitem |
-    
-	menuitem := GTK.GtkMenuItem new.
-	menuitem show.
-	aGtkMenu append: menuitem.
-	menuitem := GTK.GtkMenuItem newWithLabel: 'Do It'.
-	menuitem
-	    show;
-	    connectSignal: 'activate' to: self selector: #doIt.
-	aGtkMenu append: menuitem.
-	menuitem := GTK.GtkMenuItem newWithLabel: 'Print It'.
-	menuitem
-	    show;
-	    connectSignal: 'activate' to: self selector: #printIt.
-	aGtkMenu append: menuitem.
-	menuitem := GTK.GtkMenuItem newWithLabel: 'Inspect It'.
-	menuitem
-	    show;
-	    connectSignal: 'activate' to: self selector: #inspectIt.
-	aGtkMenu append: menuitem.
-	menuitem := GTK.GtkMenuItem newWithLabel: 'Debug It'.
-	menuitem
-	    show;
-	    connectSignal: 'activate' to: self selector: #debugIt.
-	aGtkMenu append: menuitem.
-        menuitem := GTK.GtkMenuItem new.
-        menuitem show.
-        aGtkMenu append: menuitem.
-        menuitem := GTK.GtkMenuItem newWithLabel: 'Show/Hide workspace variable(s)'.
-        menuitem
-            show;
-            connectSignal: 'activate' to: self selector: #showIVar.
-        aGtkMenu append: menuitem.
-    ]
-
     initialize [
 	<category: 'intialization'>
 
@@ -47,6 +10,7 @@ GtkTextWidget subclass: GtkWorkspaceWidget [
 				yourself.
 	object := variableTracker objectClass new.
 	super initialize.
+	self connectToWhenPopupMenu: (WorkspaceMenus on: self)
     ]
 
     postInitialize [
@@ -69,7 +33,7 @@ GtkTextWidget subclass: GtkWorkspaceWidget [
 	<category: 'evaluation'>
 
         variableTracker := nil.
-        object := anObject printNl.
+        object := anObject.
     ]
 
     targetObject [
@@ -97,25 +61,25 @@ GtkTextWidget subclass: GtkWorkspaceWidget [
     doIt [
 	<category: 'smalltalk event'>
 
-	DoItCommand on: self
+	DoItCommand executeOn: self
     ]
 
     debugIt [
 	<category: 'smalltalk event'>
 
-	DebugItCommand on: self
+	DebugItCommand executeOn: self
     ]
 
     inspectIt [
 	<category: 'smalltalk event'>
 
-	InspectItCommand on: self
+	InspectItCommand executeOn: self
     ]
 
     printIt [
 	<category: 'smalltalk event'>
 
-	PrintItCommand on: self
+	PrintItCommand executeOn: self
     ]
 
     showIVar [
@@ -125,5 +89,4 @@ GtkTextWidget subclass: GtkWorkspaceWidget [
 		ifFalse: [ variableWidget showAll ]
 		ifTrue: [ variableWidget hideAll ].
     ]
-
 ]

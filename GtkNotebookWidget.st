@@ -1,5 +1,5 @@
 GtkConcreteWidget subclass: GtkNotebookWidget [
-    | currentWidget notebook pages labels |
+    | currentWidget selectMessage notebook pages labels |
 
     initialize [
 	<category: 'initialization'>
@@ -21,10 +21,21 @@ GtkConcreteWidget subclass: GtkNotebookWidget [
 			    yourself
     ]
 
+    whenSelectionChangedSend: aSymbol to: anObject [
+        selectMessage := DirectedMessage receiver: anObject selector: aSymbol arguments: #()
+    ]
+
     addWidget: aWidget labeled: aString [
 	<category: 'user interface'>
 
 	self addWidget: aWidget labelWidget: (self buildLabelWidget: aString withIcon: GTK.Gtk gtkStockClose at: aWidget)
+    ]
+
+
+    updateWidget: aWidget withLabel: aString [
+	<category: 'user interface'>
+
+	notebook setTabLabel: aWidget mainWidget tabLabel: (self buildLabelWidget: aString withIcon: GTK.Gtk gtkStockClose at: aWidget)
     ]
 
     addPermanentWidget: aWidget labeled: aString [
@@ -63,7 +74,8 @@ GtkConcreteWidget subclass: GtkNotebookWidget [
     switchPageOn: aGtkNotebook page: aGtkNotebookPage number: anInteger [
         <category: 'notebook events'>
 
-        currentWidget := pages at: anInteger + 1
+        currentWidget := pages at: anInteger + 1.
+        selectMessage ifNotNil: [ selectMessage send ]
     ]
 
     closeIt: aGtkButton  at: aGtkConcreteWidget [
@@ -128,6 +140,13 @@ GtkConcreteWidget subclass: GtkNotebookWidget [
 	labels removeAtIndex: self currentPage + 1.
 	notebook removePage: self currentPage.
 	pages size = 1 ifTrue: [ notebook setShowTabs: false ]
+    ]
+
+    showPane [
+	<category: 'widget'>
+
+	notebook showAll.
+	pages do: [ :each | each postInitialize ]
     ]
 ]
 

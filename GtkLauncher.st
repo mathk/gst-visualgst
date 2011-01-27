@@ -1,21 +1,7 @@
 GtkVisualGSTTool subclass: GtkLauncher [
-    GtkLauncher class [ | history uniqueInstance | ]
+    GtkLauncher class [ | uniqueInstance | ]
 
     | leftSidebar rightSidebar topSidebar packageBuilderWidget implementorResultWidget senderResultWidget senderWidget implementorWidget historyWidget browsers outputs saved imageName transcriptWidget windowsMenu systemChangeNotifier |
-
-    GtkLauncher class >> addHistory: aClass [
-	<category: 'public'>
-
-	self history 
-		add: aClass;
-		changed
-    ]
-
-    GtkLauncher class >> history [
-        <category: 'public'>
-
-        ^ history ifNil: [ history := IdentitySet new ] 
-    ]
 
     GtkLauncher class >> uniqueInstance [
 	<category: 'public'>
@@ -95,6 +81,16 @@ GtkVisualGSTTool subclass: GtkLauncher [
         ^self displayError: 'Error' message: error
     ]
 
+    GtkLauncher class >> compileError: aString line: anInteger [
+	self uniqueInstance compileError: aString line: anInteger
+    ]
+
+    accelPath [
+	<category: 'accelerator path'>
+
+	^ '<VisualGST>'
+    ]
+
     classBrowser [
 	<category: 'tools events'>
 
@@ -103,12 +99,6 @@ GtkVisualGSTTool subclass: GtkLauncher [
         browsers showLastPage.
 	widget postInitialize.
 	^ widget
-    ]
-
-    classBrowserInAWindow [
-	<category: 'tools events'>
-
-	GtkClassBrowser open
     ]
 
     newWorkspace [
@@ -197,6 +187,7 @@ GtkVisualGSTTool subclass: GtkLauncher [
         "ObjectMemory>>#snapshot breaks hard links due to
          http://bugzilla.kernel.org/show_bug.cgi?id=9138, so we have to
          check the permission of the directory rather than the file."
+        imageName ifNil: [ ^ self saveImageAs ].
         imageName asFile parent isWriteable ifFalse: [ self saveImageAsAndQuit ].
         self saveImage: [ ObjectMemory snapshot: imageName. self class exit ]
     ]
@@ -276,7 +267,17 @@ GtkVisualGSTTool subclass: GtkLauncher [
 	self clearGlobalState.
 	super initialize.
 	window maximize.
-	window setIcon: (GTK.GdkPixbuf newFromFile: (self class / 'Icons/visualgst.png') file displayString error: nil)
+	window setIcon: (GTK.GdkPixbuf newFromFile: (self class / 'Icons/visualgst.png') file displayString error: nil).
+	self subscribe
+    ]
+
+    subscribe [
+	<category: 'initialization'>
+
+	GtkAnnouncer current on: GtkNamespaceSelectionChanged do: [ :ann |
+	    browsers updateWidget: browsers currentWidget withLabel: ann selectedNamespace name asString].
+	GtkAnnouncer current on: GtkClassSelectionChanged do: [ :ann |
+	    browsers updateWidget: browsers currentWidget withLabel: ann selectedClass printString]
     ]
 
     windowTitle [
@@ -292,6 +293,7 @@ GtkVisualGSTTool subclass: GtkLauncher [
         browsers currentWidget postInitialize.
         browsers currentWidget selectANamespace: Smalltalk.
         browsers currentWidget selectAClass: Object.
+	outputs hideAll
     ]
 
     postInitialize [
@@ -300,6 +302,8 @@ GtkVisualGSTTool subclass: GtkLauncher [
 	super postInitialize.
         self browserPostInitialize.
 	1 to: 2 do: [ :i | (outputs widgetAt: i) postInitialize ].
+	leftSidebar mainWidget getParent setPosition: 270.
+	topSidebar mainWidget getParent setPosition: 100.
 	leftSidebar postInitialize.
 	topSidebar postInitialize.
 	rightSidebar postInitialize.
@@ -334,6 +338,7 @@ GtkVisualGSTTool subclass: GtkLauncher [
 			    initialize;
 			    addAll: {self buildImplementorView -> 'Implementor'. self buildSenderView -> 'Sender'. self buildHistoryView -> 'History'};
 			    yourself.
+	self registerLeftPaneEvents.
 	^ leftSidebar mainWidget
     ]
 
@@ -396,7 +401,6 @@ GtkVisualGSTTool subclass: GtkLauncher [
         historyWidget := GtkHistoryWidget new
                                     browser: self;
                                     yourself.
-        self class history addDependent: historyWidget.
         ^ historyWidget mainWidget
     ]
 
@@ -438,8 +442,9 @@ GtkVisualGSTTool subclass: GtkLauncher [
     buildClassBrowserTabbedWidget [
 	<category: 'user interface'>
 
-	^ browsers := (GtkNotebookWidget parentWindow: window)
+	^ (browsers := GtkNotebookWidget parentWindow: window)
 				    showAll;
+                                    whenSelectionChangedSend: #historyChanged to: self;
 				    addWidget: self buildClassBrowserWidget labeled: 'Browser';
 				    yourself
     ]
@@ -447,7 +452,9 @@ GtkVisualGSTTool subclass: GtkLauncher [
     buildClassBrowserWidget [
 	<category: 'user interface'>
 
-	^ GtkClassBrowserWidget parentWindow: window
+	^ (GtkClassBrowserWidget parentWindow: window)
+             launcher: self;
+             yourself
     ]
 
     buildTranscriptWidget [
@@ -462,6 +469,15 @@ GtkVisualGSTTool subclass: GtkLauncher [
 	^ GtkWorkspaceWidget parentWindow: window
     ]
 
+    registerLeftPaneEvents [
+	<category: 'user interface'>
+
+	leftSidebar 
+	    whenWidgetIsVisible: implementorWidget mainWidget send: #switchToImplementor to: self;
+	    whenWidgetIsVisible: senderWidget mainWidget send: #switchToSender to: self;
+	    whenWidgetIsVisible: historyWidget mainWidget send: #switchToHistory to: self.
+    ]
+
     createEditMenus [
 	<category: 'user interface'>
 
@@ -473,44 +489,25 @@ GtkVisualGSTTool subclass: GtkLauncher [
     createNamespaceMenus [
         <category: 'user interface'>
 
-        ^{GTK.GtkMenuItem menuItem: 'Add a namespace' connectTo: self selector: #newNamespace.
-            GTK.GtkMenuItem menuItem: 'Rename a namespace' connectTo: self selector: #renameNamespace.
-            GTK.GtkMenuItem menuItem: 'Delete a namespace' connectTo: self selector: #deleteNamespace.
-            GTK.GtkMenuItem new.
-            GTK.GtkMenuItem menuItem: 'Inspect a namespace' connectTo: self selector: #inspectNamespace.
-            GTK.GtkMenuItem new.
-            GTK.GtkMenuItem menuItem: 'File out a namespace' connectTo: self selector: #fileoutNamespace}
+	^ NamespaceMenus browserBuildOn: self
     ]
 
     createClassMenus [
         <category: 'user interface'>
 
-        ^{GTK.GtkMenuItem menuItem: 'Add a class' connectTo: self selector: #newClass.
-            GTK.GtkMenuItem menuItem: 'Rename a class' connectTo: self selector: #renameClass.
-            GTK.GtkMenuItem menuItem: 'Delete a class' connectTo: self selector: #deleteClass.
-            GTK.GtkMenuItem new.
-            GTK.GtkMenuItem menuItem: 'Inspect a class' connectTo: self selector: #inspectClass.
-            GTK.GtkMenuItem new.
-            GTK.GtkMenuItem menuItem: 'File out a class' connectTo: self selector: #fileoutClass}
+	^ ClassMenus browserBuildOn: self
     ]
 
     createCategoryMenus [
         <category: 'user interface'>
 
-        ^{GTK.GtkMenuItem menuItem: 'Add a category' connectTo: self selector: #newCategory.
-            GTK.GtkMenuItem menuItem: 'Rename a category' connectTo: self selector: #renameCategory.
-            GTK.GtkMenuItem new.
-            GTK.GtkMenuItem menuItem: 'File out a category' connectTo: self selector: #fileoutCategory}
+	^ CategoryMenus browserBuildOn: self
     ]
 
     createMethodMenus [
         <category: 'user interface'>
 
-        ^{GTK.GtkMenuItem menuItem: 'Delete a method' connectTo: self selector: #deleteMethod.
-            GTK.GtkMenuItem new.
-            GTK.GtkMenuItem menuItem: 'Inspect a method' connectTo: self selector: #inspectMethod.
-            GTK.GtkMenuItem new.
-            GTK.GtkMenuItem menuItem: 'File out a method' connectTo: self selector: #fileoutMethod}
+	^ MethodMenus browserBuildOn: self
     ]
 
     createFileMenus [
@@ -532,28 +529,13 @@ GtkVisualGSTTool subclass: GtkLauncher [
     createHistoryMenus [
 	<category: 'user interface'>
 
-	self accelGroup append:
-            {{'<Alt>Left'. '<GtkLauncher>/History/Back'}.
-            {'<Alt>Right'. '<GtkLauncher>/History/Forward'}.
-            {'<Control>H'. '<GtkLauncher>/History/showHide'}}.
-
-	^{GTK.GtkMenuItem menuItem: 'Back' accelPath: '<GtkLauncher>/History/Back' connectTo: self selector: #back.
-            GTK.GtkMenuItem menuItem: 'Forward' accelPath: '<GtkLauncher>/History/Forward' connectTo: self selector: #forward.
-	    GTK.GtkMenuItem new.
-            GTK.GtkMenuItem menuItem: 'Show/Hide history pane' accelPath: '<GtkLauncher>/History/showHide' connectTo: self selector: #showHideHistory }
+	^ HistoryMenus browserBuildOn: self
     ]
 
     createTabsMenus [
 	<category: 'user interface'>
 
-       self accelGroup append: {{'<Control><Shift>Tab'. '<GtkLauncher>/Tabs/PreviousTab'}.
-	    {'<Control>Tab'. '<GtkLauncher>/Tabs/NextTab'}.
-	    {'<Control>w'. '<GtkLauncher>/Tabs/CloseTab'}}.
-
-	^{GTK.GtkMenuItem menuItem: 'Previous Tab' accelPath: '<GtkLauncher>/Tabs/PreviousTab' connectTo: self selector: #previousTab.
-	GTK.GtkMenuItem menuItem: 'Next Tab' accelPath: '<GtkLauncher>/Tabs/NextTab' connectTo: self selector: #nextTab.
-	GTK.GtkMenuItem new.
-	GTK.GtkMenuItem menuItem: 'Close Tab' accelPath: '<GtkLauncher>/Tabs/CloseTab' connectTo: self selector: #closeTab.}
+	^ TabsMenus browserBuildOn: self
     ]
 
     createToolbar [
@@ -586,16 +568,30 @@ GtkVisualGSTTool subclass: GtkLauncher [
     createToolsMenus [
 	<category: 'user interface'>
 
-        self accelGroup append: {{'<Control>B'. '<GtkLauncher>/Tools/TabbedClassBrowser'}}.
+        self accelGroup append: {{'<Control>B'. '<GtkLauncher>/Tools/TabbedClassBrowser'}.
+	    {'<Control>G'. '<GtkLauncher>/Tools/GoTo'}}.
 
-	^{GTK.GtkMenuItem menuItem: 'Browser' accelPath: '<GtkLauncher>/Tools/TabbedClassBrowser' connectTo: self selector: #newTabbedBrowser},
+	^{GTK.GtkMenuItem menuItem: 'Browser' accelPath: '<GtkLauncher>/Tools/TabbedClassBrowser' connectTo: self selector: #newTabbedBrowser.
+	  GTK.GtkMenuItem menuItem: 'Go to...' accelPath: '<GtkLauncher>/Tools/GoTo' connectTo: self selector: #goto},
             super createToolsMenus.
     ]
 
     newTabbedBrowser [
 	<category: 'tools events'>
 
-	OpenTabbedBrowserCommand on: self
+	OpenTabbedBrowserCommand executeOn: self
+    ]
+
+    goto [
+        <category: 'tools events'>
+
+        GoToCommand executeOn: self
+    ]
+
+    launcher [
+	<category: 'accessing'>
+
+	^ self
     ]
 
     cancel [
@@ -703,34 +699,58 @@ GtkVisualGSTTool subclass: GtkLauncher [
 	^ widget notNil and: [widget hasSelection]
     ]
 
-    doIt [
+    targetObject [
 	<category: 'smalltalk events'>
 
-	self onFocusPerform: #doIt
+	^ self onFocusPerform: #targetObject
     ]
 
-    printIt [
+    doIt: anObject [
 	<category: 'smalltalk events'>
 
-	self onFocusPerform: #printIt
+	self onFocusPerform: #doIt: with: anObject
     ]
 
-    inspectIt [
+    printIt: anObject [
 	<category: 'smalltalk events'>
 
-	self onFocusPerform: #inspectIt
+	self onFocusPerform: #printIt: with: anObject
     ]
 
-    debugIt [
+    inspectIt: anObject [
 	<category: 'smalltalk events'>
 
-	self onFocusPerform: #debugIt
+	self onFocusPerform: #inspectIt: with: anObject
+    ]
+
+    debugIt: anObject [
+	<category: 'smalltalk events'>
+
+	self onFocusPerform: #debugIt: with: anObject
     ]
 
     acceptIt [
 	<category: 'smalltalk events'>
 
 	browsers currentWidget acceptIt
+    ]
+
+    codeSaved [
+        <category: 'code saved'>
+
+        browsers currentWidget codeSaved
+    ]
+
+    clearUndo [
+        <category: 'code saved'>
+
+        browsers currentWidget clearUndo
+    ]
+
+    sourceCode [
+        <category: 'code saved'>
+
+        ^ browsers currentWidget sourceCode
     ]
 
     showImplementorOn: aSymbol [
@@ -770,6 +790,8 @@ GtkVisualGSTTool subclass: GtkLauncher [
 
         | isVisible |
         isVisible := aGtkWidget isVisible.
+	leftSidebar mainWidget getParent getPosition = 0 ifTrue: [ isVisible := false. leftSidebar mainWidget getParent setPosition: 270 ].
+	topSidebar mainWidget getParent getPosition = 0 ifTrue: [ isVisible := false. topSidebar mainWidget getParent setPosition: 100 ].
 	self hideSidebars.
         isVisible
             ifFalse: [
@@ -800,6 +822,14 @@ GtkVisualGSTTool subclass: GtkLauncher [
                 rightSidebar show: 1 ]
     ]
 
+    showHideBottomPane [
+	<category: 'image events'>
+
+	outputs isVisible 
+		ifTrue: [ outputs hideAll ]
+		ifFalse: [ outputs showPane ]
+    ]
+
     back [
 	<category: 'history events'>
 
@@ -822,6 +852,13 @@ GtkVisualGSTTool subclass: GtkLauncher [
 	isVisible ifFalse: [ leftSidebar show: 3 ]
     ]
 
+    historyChanged [
+	<category: 'public'>
+
+	self currentWidgetOfBrowser ifNotNil: [ :w |
+	    historyWidget refresh: w historyStack ]
+    ]
+
     previousTab [
 	<category: 'tabs events'>
 
@@ -837,107 +874,16 @@ GtkVisualGSTTool subclass: GtkLauncher [
     ]
 
     closeTab [
+
+	self close
+    ]
+
+    close [
 	<category: 'tabs events'>
 
 	browsers numberOfPages > 1 
 			    ifTrue: [ browsers currentWidget checkCodeWidgetAndUpdate: [ browsers closeCurrentPage ] ]
 			    ifFalse: [ browsers closeCurrentPage ].
-    ]
-
-    fileoutNamespace [
-        <category: 'namespace events'>
-
-	browsers currentWidget fileoutNamespace
-    ]
-
-    newNamespace [
-        <category: 'namespace events'>
-
-        browsers currentWidget newNamespace
-    ]
-
-    renameNamespace [
-        <category: 'namespace events'>
-
-        browsers currentWidget renameNamespace
-    ]
-
-    deleteNamespace [
-        <category: 'namespace events'>
-
-        browsers currentWidget deleteNamespace
-    ]
-
-    inspectNamespace [
-        <category: 'namespace events'>
-
-        browsers currentWidget inspectNamespace
-    ]
-
-    newClass [
-        <category: 'class events'>
-
-        browsers currentWidget newClass
-    ]
-
-    renameClass [
-        <category: 'class events'>
-
-	browsers currentWidget renameClass
-    ]
-
-    deleteClass [
-        <category: 'class events'>
-
-        browsers currentWidget deleteClass
-    ]
-
-    inspectClass [
-        <category: 'class events'>
-
-        browsers currentWidget inspectClass
-    ]
-
-    fileoutClass [
-        <category: 'class events'>
-
-        browsers currentWidget fileoutClass
-    ]
-
-    newCategory [
-        <category: 'category events'>
-
-        browsers currentWidget newCategory
-    ]
-
-    renameCategory [
-        <category: 'category events'>
-
-        browsers currentWidget renameCategory
-    ]
-
-    fileoutCategory [
-        <category: 'method events'>
-
-	browsers currentWidget fileoutCategory
-    ]
-
-    deleteMethod [
-        <category: 'method events'>
-
-        browsers currentWidget deleteMethod
-    ]
-
-    inspectMethod [
-        <category: 'method events'>
-
-        browsers currentWidget inspectMethod
-    ]
-
-    fileoutMethod [
-        <category: 'method events'>
-
-	browsers currentWidget fileoutMethod
     ]
 
     currentWidgetOfBrowser [
@@ -952,47 +898,68 @@ GtkVisualGSTTool subclass: GtkLauncher [
 	^ outputs hasFocus
     ]
 
+    switchToImplementor [
+        <category: 'pane events'>
+
+	implementorWidget isVisible ifFalse: [ ^ self ].
+	topSidebar show: 1
+    ]       
+    
+    switchToSender [
+        <category: 'pane events'>
+
+	senderWidget isVisible ifFalse: [ ^ self ].
+	topSidebar show: 2
+    ]       
+            
+    switchToHistory [
+        <category: 'pane events'>
+
+	historyWidget isVisible ifFalse: [ ^ self ].
+	topSidebar hideAll
+    ]
+
     senderSelected [
-        <category: 'events'>
+        <category: 'pane events'>
 
         senderWidget hasSelection ifFalse: [ ^ self ].
         self findInMethod: (senderWidget matchSelector: senderWidget selection) values first element
     ]
 
     implementorSelected [
-        <category: 'events'>
+        <category: 'pane events'>
 
         implementorWidget hasSelection ifFalse: [ ^ self ].
         self imageSelectorForImplementor: implementorWidget selection
     ]
 
     senderSelected [
-	<category: 'events'>
+	<category: 'pane events'>
 
         senderWidget hasSelection ifFalse: [ ^ self ].
         self imageSelectorForSender: senderWidget selection
     ]
 
     imageSelectorForImplementor: aSymbol [
-        <category: 'events'>
+        <category: 'pane events'>
 
 	implementorResultWidget appendImplementorResults: (implementorWidget matchSelector: aSymbol)
     ]
 
     imageSelectorForSender: aSymbol [
-        <category: 'events'>
+        <category: 'pane events'>
 
 	senderResultWidget appendSenderResults: (senderWidget matchSelector: aSymbol)
     ]
 
     resultImplementorSelected [
-        <category: 'events'>
+        <category: 'pane events'>
 
 	implementorResultWidget selectedResult: self currentWidgetOfBrowser
     ]
 
     resultSenderSelected [
-        <category: 'events'>
+        <category: 'pane events'>
 
         senderResultWidget selectedResult: self currentWidgetOfBrowser
     ]
@@ -1003,12 +970,33 @@ GtkVisualGSTTool subclass: GtkLauncher [
         | event |
         event := aGdkEventKey castTo: GTK.GdkEventKey type.
 
+	event keyval value = 65473 ifTrue: [ self showHideBottomPane. ^ true ].
 	(event state value bitAnd: GTK.Gdk gdkControlMask) = 0 ifTrue: [ ^ false ].
 	(#(65417 65289 65056) includes: event keyval value) ifFalse: [ ^ false ].
 	(event state value bitAnd: GTK.Gdk gdkShiftMask) = 0  
 					    ifFalse: [ self previousTab ]
 					    ifTrue: [ self nextTab ].
         ^ true
+    ]
+
+    selectANamespace: aNamespace [
+
+	browsers currentWidget selectANamespace: aNamespace
+    ]
+
+    selectAnInstanceMethod: aMethod [
+
+	browsers currentWidget selectAnInstanceMethod: aMethod	
+    ]
+
+    selectAClassMethod: aMethod [
+
+	browsers currentWidget selectAClassMethod: aMethod
+    ]
+
+    compileError: aString line: anInteger [
+
+	browsers currentWidget compileError: aString line: anInteger
     ]
 ]
 

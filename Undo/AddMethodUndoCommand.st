@@ -21,7 +21,7 @@ UndoCommand subclass: AddMethodUndoCommand [
     compileError: aString line: anInteger [
 	<category: 'error printing'>
 
-	browserWidget isNil ifFalse: [ browserWidget compileError: aString line: anInteger ].
+	browserWidget isNil ifFalse: [ GtkLauncher compileError: aString line: anInteger ].
 	^ self preconditionFailed: aString
     ]
 
@@ -98,7 +98,7 @@ UndoCommand subclass: AddMethodUndoCommand [
 
 	browserWidget ifNotNil: [ classOrMeta isClass 
 						    ifTrue: [ browserWidget selectAnInstanceMethod: compiledMethod selector ]
-						    ifFalse: [ browserWidget selectAClassMethod: compiledMethod selector ] ].
+						    ifFalse: [ browserWidget selectAClassMethod: compiledMethod selector ] ]
     ]
 
     displayError [
